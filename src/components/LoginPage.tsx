@@ -1,3 +1,4 @@
+// src/pages/LoginPage.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,20 +8,65 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Sparkles } from "lucide-react";
 
+// Mock database functions
+const DB_KEY = "vyapyaar_users";
+
+const initializeDB = () => {
+  if (!localStorage.getItem(DB_KEY)) {
+    localStorage.setItem(DB_KEY, JSON.stringify([]));
+  }
+};
+
+const signUp = async (userData: { username: string; password: string; email?: string }) => {
+  const users = JSON.parse(localStorage.getItem(DB_KEY) || "[]");
+  
+  if (users.some((u: any) => u.username === userData.username)) {
+    return { success: false, message: "Username already exists" };
+  }
+
+  users.push(userData);
+  localStorage.setItem(DB_KEY, JSON.stringify(users));
+  return { success: true, message: "Registration successful!", user: userData };
+};
+
+const login = async (username: string, password: string) => {
+  const users = JSON.parse(localStorage.getItem(DB_KEY) || "[]");
+  const user = users.find((u: any) => u.username === username && u.password === password);
+
+  if (!user) {
+    return { success: false, message: "Invalid username or password" };
+  }
+
+  return { success: true, message: "Login successful!", user };
+};
+
+// Initialize database
+initializeDB();
+
 export function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [isLoginView, setIsLoginView] = useState(true);
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    email: "",
+    confirmPassword: ""
+  });
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username || !password) {
+    if (!formData.username || !formData.password) {
       toast({
-        title: "Oops! Missing details",
-        description: "Please enter both username and password to continue your journey! 🌟",
+        title: "Missing information",
+        description: "Please enter both username and password",
         variant: "destructive",
       });
       return;
@@ -28,19 +74,97 @@ export function LoginPage() {
 
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      // Store user data in localStorage for demo
-      localStorage.setItem("vyapyaar_user", JSON.stringify({ username }));
+    try {
+      const response = await login(formData.username, formData.password);
       
+      if (response.success) {
+        localStorage.setItem("vyapyaar_user", JSON.stringify(response.user));
+        toast({
+          title: "Welcome back! 🎉",
+          description: `Namaste ${formData.username}! Ready to build your dreams?`,
+        });
+        navigate("/home");
+      } else {
+        toast({
+          title: "Login failed",
+          description: response.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Welcome to VyaPyaarAI! 🎉",
-        description: `Namaste ${username}! Ready to build your dreams?`,
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.username || !formData.password || !formData.email) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const response = await signUp({
+        username: formData.username,
+        password: formData.password,
+        email: formData.email
       });
       
-      navigate("/home");
+      if (response.success) {
+        toast({
+          title: "Registration successful!",
+          description: "Your account has been created. Please login.",
+        });
+        setIsLoginView(true);
+        setFormData(prev => ({ ...prev, password: "", confirmPassword: "" }));
+      } else {
+        toast({
+          title: "Registration failed",
+          description: response.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
+  };
+
+  const toggleView = () => {
+    setIsLoginView(!isLoginView);
+    setFormData({
+      username: "",
+      password: "",
+      email: "",
+      confirmPassword: ""
+    });
   };
 
   return (
@@ -62,51 +186,101 @@ export function LoginPage() {
           </p>
         </div>
 
-        {/* Login Card */}
+        {/* Auth Card */}
         <Card className="shadow-elegant border-0 bg-card/80 backdrop-blur-sm">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-semibold">Welcome Back!</CardTitle>
+            <CardTitle className="text-2xl font-semibold">
+              {isLoginView ? "Welcome Back!" : "Create Account"}
+            </CardTitle>
             <CardDescription>
-              Ready to continue building your business dreams? ✨
+              {isLoginView 
+                ? "Ready to continue building your business dreams? ✨"
+                : "Join us and start building your business dreams today! ✨"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={isLoginView ? handleLogin : handleSignUp} className="space-y-4">
+              {!isLoginView && (
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email*</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="transition-all duration-300 focus:shadow-warm"
+                  />
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">Username*</Label>
                 <Input
                   id="username"
+                  name="username"
                   type="text"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder={isLoginView ? "Enter your username" : "Choose a username"}
+                  value={formData.username}
+                  onChange={handleChange}
+                  required
                   className="transition-all duration-300 focus:shadow-warm"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Password*</Label>
                 <Input
                   id="password"
+                  name="password"
                   type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={isLoginView ? "Enter your password" : "Create a password"}
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
                   className="transition-all duration-300 focus:shadow-warm"
                 />
               </div>
+
+              {!isLoginView && (
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password*</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                    className="transition-all duration-300 focus:shadow-warm"
+                  />
+                </div>
+              )}
 
               <Button 
                 type="submit" 
                 className="w-full bg-gradient-primary hover:opacity-90 text-white font-medium py-6 transition-all duration-300 hover:shadow-elegant"
                 disabled={isLoading}
               >
-                {isLoading ? "Getting ready..." : "Let's Start! 🚀"}
+                {isLoading 
+                  ? (isLoginView ? "Signing in..." : "Creating account...")
+                  : (isLoginView ? "Sign In 🚀" : "Sign Up 🎉")}
               </Button>
             </form>
             
             <p className="text-center text-sm text-muted-foreground mt-4">
-              New here? Don't worry, we'll guide you step by step! 💪
+              {isLoginView 
+                ? "Don't have an account? "
+                : "Already have an account? "}
+              <button 
+                onClick={toggleView}
+                className="text-primary hover:underline focus:outline-none"
+              >
+                {isLoginView ? "Sign up" : "Sign in"}
+              </button>
             </p>
           </CardContent>
         </Card>

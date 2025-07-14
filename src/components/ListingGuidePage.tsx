@@ -110,7 +110,7 @@ export function ListingGuidePage() {
           <Card className="shadow-elegant border-0 bg-card/80 backdrop-blur-sm hover:shadow-warm transition-all duration-300 cursor-pointer group"
                 onClick={() => navigate("/ai-marketing")}>
             <CardHeader className="text-center pb-4">
-              <div className="bg-gradient-accent p-4 rounded-2xl mx-auto w-fit mb-4 group-hover:scale-110 transition-transform">
+              <div className="bg-gradient-primary p-4 rounded-2xl mx-auto w-fit mb-4 group-hover:scale-110 transition-transform">
                 <Megaphone className="h-8 w-8 text-white" />
               </div>
               <CardTitle className="text-xl">📢 AI Gen Ads & Promo</CardTitle>
@@ -119,7 +119,7 @@ export function ListingGuidePage() {
               <p className="text-muted-foreground mb-4">
                 Create engaging Instagram captions, WhatsApp messages, and offer taglines
               </p>
-              <Button className="w-full bg-gradient-accent text-white hover:opacity-90">
+              <Button className="w-full bg-gradient-primary text-white hover:opacity-90">
                 Generate Marketing Content
               </Button>
             </CardContent>
@@ -139,6 +139,146 @@ export function ListingGuidePage() {
             <div>
               <p><strong>Platform:</strong> {productData.platform}</p>
               <p><strong>Cost Price:</strong> ₹{productData.costPrice}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Step by Step Guide */}
+        <Card className="mt-8 shadow-warm border-0 bg-card">
+          <CardHeader>
+            <CardTitle>Step by Step Guide</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Step 1 */}
+            <div className="bg-card/50 p-4 rounded-lg border border-border">
+              <h3 className="font-bold text-lg mb-3">Step 1: Sign Up & Set Up Your Seller Account</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✅</span>
+                  <span>Choose the right account type (Individual vs. Business seller, if applicable).</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✅</span>
+                  <span>Complete verification (ID, bank details, tax info).</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2">✅</span>
+                  <span>Enable necessary features (Shipping, returns, payment methods).</span>
+                </li>
+              </ul>
+              <div className="mt-3 p-3 bg-accent/10 rounded border-l-4 border-accent">
+                <p className="text-sm"><span className="font-medium">🔹 Pro Tip:</span> Check seller fees & policies upfront to avoid surprises.</p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="bg-card/50 p-4 rounded-lg border border-border">
+              <h3 className="font-bold text-lg mb-3">Step 2: Add Your Product Listing</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">📌</span>
+                  <span><strong>Product Title</strong> → Clear, keyword-rich (e.g., "Wireless Bluetooth Earbuds, 50hr Battery, IPX7 Waterproof").</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">📌</span>
+                  <span><strong>High-Quality Images</strong> → Use 5-7 images (white background + lifestyle shots).</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">📌</span>
+                  <span><strong>Videos (if possible)</strong> → Boosts engagement (e.g., demo video).</span>
+                </li>
+              </ul>
+              <div className="mt-3 p-3 bg-accent/10 rounded border-l-4 border-accent">
+                <p className="text-sm"><span className="font-medium">🔹 Pro Tip:</span> Follow the platform's image size/format guidelines (e.g., Amazon: 1000x1000px).</p>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="bg-card/50 p-4 rounded-lg border border-border">
+              <h3 className="font-bold text-lg mb-3">Step 3: Optimize Product Description & Details</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <span className="text-purple-500 mr-2">📝</span>
+                  <span><strong>Bullet Points (Key Features)</strong> → Highlight benefits, not just specs.</span>
+                </li>
+                <div className="ml-6 italic text-sm text-muted-foreground my-2">
+                  Example: "✅ 50-hour battery life – Enjoy 5x longer playtime than competitors."
+                </div>
+                <li className="flex items-start">
+                  <span className="text-purple-500 mr-2">📝</span>
+                  <span><strong>Full Description</strong> → Tell a story (problem → solution). Include:</span>
+                </li>
+                <ul className="ml-6 list-disc space-y-1">
+                  <li>Materials, dimensions, warranty, FAQs.</li>
+                  <li>SEO Keywords (e.g., "best wireless earbuds for gym").</li>
+                </ul>
+              </ul>
+              <div className="mt-3 p-3 bg-accent/10 rounded border-l-4 border-accent">
+                <p className="text-sm"><span className="font-medium">🔹 Pro Tip:</span> Use tools like Helium10 (for Amazon) or SEMrush for keyword research.</p>
+              </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="bg-card/50 p-4 rounded-lg border border-border">
+              <h3 className="font-bold text-lg mb-3">Step 4: Set Competitive Pricing & Offers</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <span className="text-yellow-500 mr-2">💰</span>
+                  <span><strong>Base Price:</strong> Research competitors (aim for mid-range if new).</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-yellow-500 mr-2">🎁</span>
+                  <span><strong>Discounts:</strong> Launch with a limited-time offer (e.g., "15% off first 100 buyers").</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-yellow-500 mr-2">🚚</span>
+                  <span><strong>Shipping Strategy:</strong> Free shipping? Or calculated? (Check platform rules).</span>
+                </li>
+              </ul>
+              <div className="mt-3 p-3 bg-accent/10 rounded border-l-4 border-accent">
+                <p className="text-sm"><span className="font-medium">🔹 Pro Tip:</span> Use repricer tools (e.g., RepricerExpress) if competing on price.</p>
+              </div>
+            </div>
+
+            {/* Step 5 */}
+            <div className="bg-card/50 p-4 rounded-lg border border-border">
+              <h3 className="font-bold text-lg mb-3">Step 5: Launch & Promote Your Listing</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2">🚀</span>
+                  <span><strong>Internal Traffic:</strong> Use the platform's ads (e.g., Amazon Sponsored Products).</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2">📢</span>
+                  <span><strong>External Traffic:</strong> Share on social media, email lists, or influencers.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2">⭐</span>
+                  <span><strong>Get Reviews Fast:</strong> Offer samples or use "Request a Review" button (if available).</span>
+                </li>
+              </ul>
+              <div className="mt-3 p-3 bg-accent/10 rounded border-l-4 border-accent">
+                <p className="text-sm"><span className="font-medium">🔹 Pro Tip:</span> Run a Giveaway (e.g., "Buy 1, Get 1 Free") to boost initial sales.</p>
+              </div>
+            </div>
+
+            {/* Bonus */}
+            <div className="bg-accent/5 p-4 rounded-lg border border-accent">
+              <h3 className="font-bold text-lg mb-3 text-accent">BONUS: Post-Launch Checklist</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <span className="text-accent mr-2">•</span>
+                  <span>Monitor analytics (conversion rate, traffic sources).</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-accent mr-2">•</span>
+                  <span>Reply to customer Q&A quickly.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-accent mr-2">•</span>
+                  <span>Update listing based on reviews/feedback.</span>
+                </li>
+              </ul>
             </div>
           </CardContent>
         </Card>

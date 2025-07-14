@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Send, Bot, User, Lightbulb, Leaf, TrendingUp } from "lucide-react";
+import { ArrowLeft, Send, Bot, User, Lightbulb, TrendingUp } from "lucide-react";
 
 interface Message {
   id: string;
@@ -12,12 +12,122 @@ interface Message {
   suggestions?: string[];
 }
 
+// Gemini AI configuration
+const SYSTEM_PROMPT = `
+Role:
+You are VyaPyaarAI - India's most trusted digital business mentor with 10+ years of experience helping first-time entrepreneurs. Your specialty is guiding people to start successful online businesses with minimal investment.
+
+Objective:
+Help users discover profitable, sustainable business ideas perfectly suited to their location, budget and interests - with special focus on e-commerce potential.
+
+Step 1: Initial Discovery
+Start by asking these questions in a friendly, conversational tone:
+
+"Which state/city are you from? This helps me suggest locally relevant ideas!"
+
+"What's your comfortable starting budget range?
+1. Under ₹1000
+2. ₹1000 - ₹10,000
+3. ₹20,000 - ₹50,000
+4. Above ₹50,000
+
+"What are you passionate about? (e.g. food, fashion, tech, crafts, beauty, home products, etc.)"
+
+Step 2: Idea Generation
+For their specific situation, suggest 3-5 business ideas that are:
+✓ Low-Cost Start: Minimal initial investment required
+✓ Online Potential: Sellable via Meesho/Amazon/Instagram/etc.
+✓ Local Advantage: Leverages regional resources/tastes
+✓ Sustainable: Eco-friendly options where possible
+✓ Scalable: Potential to grow over time
+
+Step 3: Detailed Guidance
+For each idea, provide:
+• Simple 5-step starter plan
+• Estimated startup costs breakdown
+• Best online platforms to sell on
+• Local supplier/resource tips
+• Common pitfalls to avoid
+
+Communication Style:
+• Language: Detect and respond in user's language (Hindi/Tamil/etc.)
+• Tone: Warm, encouraging - like a wise family friend
+• Format: Clear bullet points with emojis for readability
+• Follow-up: Always end by asking which idea excites them most to dive deeper
+
+Example Starter Message:
+First Question (Location):
+"Welcome 👋 Let's begin with where you're located. Which state or city are you from? This helps me suggest the most relevant local opportunities!"
+
+[Wait for response]
+
+Second Question (Budget):
+"Great! Now, let's talk about your comfortable starting budget range:
+1. Under ₹1000
+2. ₹1000 - ₹10,000
+3. ₹20,000 - ₹50,000
+4. Above ₹50,000
+
+What range works best for you?"
+
+[Wait for response]
+
+Third Question (Interests):
+"Perfect! Lastly, what are you most passionate about or interested in? For example:
+
+Food & beverages
+
+Fashion & clothing
+
+Beauty & skincare
+
+Home & kitchen products
+
+Handmade crafts
+
+Tech gadgets
+
+Education services
+
+Or something else entirely!
+
+Tell me what excites you!"
+
+Key Features of This Approach:
+
+Natural Progression: Questions flow logically like a real conversation
+
+Clear Formatting: Bullet points make options easy to read
+
+Encouraging Tone: Keeps the user engaged at each step
+
+Response Handling: Explicitly waits for user input between questions
+
+Emoji Use: Maintains friendly visual appeal
+
+Flexibility: Allows for follow-up questions if answers need clarification
+
+After Gathering Information:
+Once all three answers are received, provide:
+
+A quick summary of their inputs
+
+3-5 customized business ideas
+
+Next steps for their preferred option
+
+in the output dont put **
+`;
+
+const GREETING = "👋 Namaste! I'm VyaPyaarAI, here to help you find the right business idea. Let's begin!";
+
 export function StartBusinessPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const chatSessionRef = useRef<any>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -28,15 +138,45 @@ export function StartBusinessPage() {
   }, [messages]);
 
   useEffect(() => {
-    // Initial greeting
-    const initialMessage: Message = {
-      id: "1",
-      type: "bot",
-      content: "Namaste! Let's bring your dream to life 🌟\n\nI'm here to help you start your perfect business. Tell me, what kind of products interest you the most?",
-      suggestions: ["Fashion & Clothing", "Beauty & Skincare", "Homemade Snacks", "Handmade Crafts", "Digital Services"]
-    };
-    setMessages([initialMessage]);
+    // Initialize chat
+    initializeChat();
   }, []);
+
+  const initializeChat = async () => {
+    try {
+      // Initialize Gemini AI (make sure to install @google/generative-ai)
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      
+      // Get API key from environment variables
+      const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+      if (!apiKey) {
+        throw new Error("Google API key not found in environment variables");
+      }
+      
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      
+      // Start chat session
+      chatSessionRef.current = model.startChat({
+        history: [
+          {
+            role: "user",
+            parts: [{ text: SYSTEM_PROMPT }],
+          },
+          {
+            role: "model",
+            parts: [{ text: GREETING }],
+          },
+        ],
+      });
+
+      // Add greeting message
+      addBotMessage(GREETING);
+    } catch (error) {
+      console.error("Error initializing chat:", error);
+      addBotMessage("Welcome! I'm here to help you start your business. Let's begin our conversation.");
+    }
+  };
 
   const addBotMessage = (content: string, suggestions?: string[]) => {
     const newMessage: Message = {
@@ -48,7 +188,7 @@ export function StartBusinessPage() {
     setMessages(prev => [...prev, newMessage]);
   };
 
-  const handleSend = (message: string = inputValue) => {
+  const handleSend = async (message: string = inputValue) => {
     if (!message.trim()) return;
 
     // Add user message
@@ -63,39 +203,24 @@ export function StartBusinessPage() {
     // Simulate bot typing
     setIsTyping(true);
     
-    setTimeout(() => {
-      setIsTyping(false);
-      
-      // Bot responses based on user input
-      const lowerMessage = message.toLowerCase();
-      
-      if (lowerMessage.includes('fashion') || lowerMessage.includes('clothing')) {
-        addBotMessage(
-          "Wonderful choice! Fashion is always in demand 👗\n\nHere are some trending, eco-friendly fashion ideas perfect for the Indian market:\n\n🌿 Sustainable cotton wear\n👘 Indo-western fusion clothing\n🧣 Handwoven accessories\n♻️ Upcycled vintage pieces\n🌺 Regional embroidered items\n\nWhich of these resonates with you? Or would you like to explore a specific regional style?",
-          ["Sustainable Cotton", "Indo-Western Fusion", "Handwoven Accessories", "Tell me more about regional styles"]
-        );
-      } else if (lowerMessage.includes('beauty') || lowerMessage.includes('skincare')) {
-        addBotMessage(
-          "Beautiful! The beauty industry is booming in India 💄✨\n\nHere are some trending, natural beauty ideas:\n\n🌿 Ayurvedic skincare products\n🥥 Homemade organic cosmetics\n🌸 Traditional beauty remedies\n🧴 Herbal hair care solutions\n💆‍♀️ DIY beauty kits\n\nWhat type of beauty products excite you most? Natural ingredients are very popular right now!",
-          ["Ayurvedic Skincare", "Organic Cosmetics", "Herbal Hair Care", "DIY Beauty Kits"]
-        );
-      } else if (lowerMessage.includes('snack') || lowerMessage.includes('food')) {
-        addBotMessage(
-          "Delicious choice! Food business is always profitable 🍪\n\nHere are some popular snack ideas that sell well:\n\n🥜 Healthy roasted nuts & seeds\n🍪 Traditional homemade sweets\n🌶️ Spicy regional namkeens\n🥤 Natural fruit drinks\n🍯 Organic honey products\n\nFood businesses start small and can grow big! Which type of snacks would you love to make?",
-          ["Healthy Nuts & Seeds", "Traditional Sweets", "Regional Namkeens", "Natural Drinks"]
-        );
-      } else if (lowerMessage.includes('craft') || lowerMessage.includes('handmade')) {
-        addBotMessage(
-          "How creative! Handmade products have a special charm 🎨\n\nHere are some craft ideas that are in high demand:\n\n🪔 Decorative diyas & candles\n🎁 Personalized gift items\n🧸 Handmade toys & dolls\n🏺 Traditional pottery items\n📚 Custom notebooks & stationery\n\nHandmade products tell a story! What kind of crafts do you enjoy making?",
-          ["Decorative Items", "Personalized Gifts", "Handmade Toys", "Traditional Pottery"]
-        );
-      } else {
-        addBotMessage(
-          "That's interesting! Let me help you explore this further 🤔\n\nFor any business to succeed, we need to consider:\n\n💡 Market demand\n🌱 Sustainability\n💰 Profit potential\n📍 Local relevance\n\nTell me more about what you're passionate about, and I'll suggest some specific business ideas that could work perfectly for you!",
-          ["I love making things by hand", "I'm good with technology", "I enjoy helping people", "I want something eco-friendly"]
-        );
+    try {
+      // Send message to Gemini AI
+      if (!chatSessionRef.current) {
+        await initializeChat();
       }
-    }, 1500);
+
+      const result = await chatSessionRef.current.sendMessage(message);
+      const response = await result.response;
+      const text = response.text();
+
+      // Add bot response
+      addBotMessage(text);
+    } catch (error) {
+      console.error("Error getting response from AI:", error);
+      addBotMessage("I'm having trouble connecting to the AI service. Please try again later.");
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -164,7 +289,7 @@ export function StartBusinessPage() {
                   </CardContent>
                 </Card>
                 
-                {/* Suggestions */}
+                {/* Suggestions - You can remove this if not needed with AI responses */}
                 {message.suggestions && (
                   <div className="flex flex-wrap gap-2 mt-3">
                     {message.suggestions.map((suggestion, index) => (
@@ -219,7 +344,7 @@ export function StartBusinessPage() {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Tell me about your interests..."
+                placeholder="Tell me about your business interests..."
                 className="flex-1 border-border/50 focus:border-primary/50"
               />
               <Button 

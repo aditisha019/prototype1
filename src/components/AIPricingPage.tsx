@@ -260,7 +260,7 @@ export function AIPricingPage() {
         )}
 
         {/* Pricing Tips */}
-        <Card className="mt-8 shadow-elegant border-0 bg-gradient-accent">
+        <Card className="mt-8 shadow-elegant border-0 bg-gradient-primary">
           <CardHeader>
             <CardTitle className="text-white">💡 Smart Pricing Tips</CardTitle>
           </CardHeader>
