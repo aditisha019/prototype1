@@ -6,6 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Megaphone, Copy, Instagram, MessageCircle, Tag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
 
 interface ProductData {
   category: string;
@@ -38,60 +42,87 @@ export function AIMarketingPage() {
     setProductData(JSON.parse(data));
   }, [navigate]);
 
+  const generateMarketingContent = async (product: ProductData, audience: string) => {
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      safetySettings: [
+        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
+        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH }
+      ],
+      generationConfig: {
+        maxOutputTokens: 2000,
+        temperature: 0.8,
+      },
+    });
+
+    const prompt = `
+You are an expert digital marketer specializing in e-commerce promotions. Create compelling marketing content for:
+
+**Product:** ${product.productName}
+**Category:** ${product.category}
+**Description:** ${product.description}
+**Platform:** ${product.platform}
+**Target Audience:** ${audience || "general consumers"}
+
+Generate:
+1. An engaging Instagram caption (with 5 relevant hashtags)
+2. A persuasive WhatsApp marketing message (with emojis and clear CTA)
+3. A short, impactful offer tagline (max 10 words)
+
+Format response as JSON:
+{
+  "instagramCaption": "string (with emojis and hashtags)",
+  "whatsappMessage": "string (with emojis and clear CTA)",
+  "offerTagline": "string (short and impactful)"
+}
+
+Guidelines:
+- Use emojis appropriately
+- Include power words (e.g., Exclusive, Limited, Premium)
+- Create urgency (e.g., "Limited Time Offer")
+- Highlight benefits, not just features
+- Match brand voice for ${product.platform}
+- Make it scannable and engaging
+`;
+
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      const cleanText = text.replace(/^```json|```$/g, '').trim();
+      return JSON.parse(cleanText);
+    } catch (error) {
+      console.error("AI generation error:", error);
+      throw new Error("Failed to generate content. Please try again.");
+    }
+  };
+
   const generateContent = async () => {
     if (!productData) return;
     
     setIsGenerating(true);
     
-    // Simulate AI generation (replace with actual Gemini API call)
-    setTimeout(() => {
-      const audience = targetAudience || "young adults";
-      const content: MarketingContent = {
-        instagramCaption: `✨ Introducing the perfect ${productData.productName}! ✨
-
-Looking for premium quality ${productData.category.toLowerCase()} that fits your lifestyle? Look no further! 💫
-
-🌟 Why you'll love it:
-• Premium quality materials
-• Perfect for ${audience}
-• Affordable luxury
-• Fast delivery guaranteed
-
-💝 Special Launch Offer - Limited Time!
-📱 DM us to order or click the link in bio
-
-#${productData.category.replace(/\s+/g, '')} #${productData.productName.replace(/\s+/g, '')} #OnlineShopping #QualityProducts #${productData.platform} #TrendingNow #LifestyleEssentials #PremiumQuality`,
-
-        whatsappMessage: `🛍️ *Exciting New Product Alert!* 🛍️
-
-Hi! I'm excited to share my latest ${productData.category.toLowerCase()} collection with you!
-
-*${productData.productName}*
-${productData.description}
-
-✅ Premium Quality
-✅ Best Prices
-✅ Quick Delivery
-✅ Easy Returns
-
-*Special Price: ₹${Math.round(parseInt(productData.costPrice) * 2.2)}* (Limited Time)
-
-*Available on ${productData.platform}*
-
-Interested? Reply "YES" and I'll send you the direct link! 
-
-Happy Shopping! 🛒✨`,
-
-        offerTagline: "Flat 25% Off - Today Only! Premium Quality Guaranteed! 🔥"
-      };
+    try {
+      const audience = targetAudience || "general consumers";
+      const content = await generateMarketingContent(productData, audience);
       
       setMarketingContent(content);
-      setIsGenerating(false);
       toast({
         title: "Marketing Content Generated! 🎉",
         description: "Your promotional content is ready to boost sales.",
       });
-    }, 2000);
+    } catch (error) {
+      console.error("Error generating content:", error);
+      toast({
+        title: "Generation Failed ❌",
+        description: error instanceof Error ? error.message : "There was an issue generating content.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const copyToClipboard = (text: string, type: string) => {
@@ -124,8 +155,8 @@ Happy Shopping! 🛒✨`,
               <Megaphone className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-lg">AI Gen Ads & Promo Content</h1>
-              <p className="text-sm text-muted-foreground">Create engaging marketing content</p>
+              <h1 className="font-bold text-lg">AI Marketing Content Generator</h1>
+              <p className="text-sm text-muted-foreground">Create engaging promotional content</p>
             </div>
           </div>
         </div>
@@ -156,19 +187,19 @@ Happy Shopping! 🛒✨`,
         {/* Target Audience Input */}
         <Card className="mb-6 shadow-warm border-0 bg-card/80 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle>Target Audience (Optional)</CardTitle>
+            <CardTitle>Target Audience</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <Label htmlFor="audience">Who is your ideal customer?</Label>
               <Input
                 id="audience"
-                placeholder="e.g., working women, college students, fitness enthusiasts"
+                placeholder="e.g., working professionals, college students, new parents"
                 value={targetAudience}
                 onChange={(e) => setTargetAudience(e.target.value)}
               />
               <p className="text-sm text-muted-foreground">
-                Leave blank for general audience targeting
+                Helps generate more targeted content (leave blank for general audience)
               </p>
             </div>
           </CardContent>
@@ -179,17 +210,17 @@ Happy Shopping! 🛒✨`,
           <Button 
             onClick={generateContent}
             disabled={isGenerating}
-            className="bg-gradient-accent text-white hover:opacity-90 px-8 py-3 text-lg"
+            className="bg-gradient-primary text-white hover:opacity-90 px-8 py-3 text-lg"
           >
             {isGenerating ? (
               <>
-                <Megaphone className="mr-2 h-5 w-5 animate-spin" />
-                Generating Promo Content...
+                <Megaphone className="mr-2 h-5 w-5 animate-pulse" />
+                Generating Content...
               </>
             ) : (
               <>
                 <Megaphone className="mr-2 h-5 w-5" />
-                Generate Promo Texts
+                Generate Marketing Content
               </>
             )}
           </Button>
@@ -197,7 +228,7 @@ Happy Shopping! 🛒✨`,
 
         {/* Generated Content */}
         {marketingContent && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-in">
             {/* Instagram Caption */}
             <Card className="shadow-warm border-0 bg-card/80 backdrop-blur-sm">
               <CardHeader>
@@ -254,12 +285,12 @@ Happy Shopping! 🛒✨`,
                 <CardTitle className="flex items-center justify-between text-white">
                   <div className="flex items-center gap-2">
                     <Tag className="h-5 w-5" />
-                    Short Offer Tagline
+                    Promotional Tagline
                   </div>
                   <Button 
                     variant="outline" 
                     size="sm"
-                    className="text-primary hover:text-primary"
+                    className="text-primary hover:text-primary bg-white/90"
                     onClick={() => copyToClipboard(marketingContent.offerTagline, "Offer Tagline")}
                   >
                     <Copy className="h-4 w-4 mr-1" />
@@ -275,18 +306,18 @@ Happy Shopping! 🛒✨`,
         )}
 
         {/* Marketing Tips */}
-        <Card className="mt-8 shadow-elegant border-0 bg-gradient-success">
+        <Card className="mt-8 shadow-elegant border-0 bg-gradient-primary">
           <CardHeader>
             <CardTitle className="text-white">📢 Marketing Success Tips</CardTitle>
           </CardHeader>
           <CardContent className="text-white">
             <ul className="space-y-2 text-sm">
-              <li>• Post Instagram content during peak hours (7-9 PM)</li>
-              <li>• Send WhatsApp messages to close friends and family first</li>
-              <li>• Use offer taglines in stories and status updates</li>
-              <li>• Engage with comments and replies quickly</li>
-              <li>• Share customer testimonials and reviews</li>
-              <li>• Create urgency with limited-time offers</li>
+              <li>• Post Instagram content when your audience is most active (check Insights)</li>
+              <li>• Personalize WhatsApp messages with the recipient's name when possible</li>
+              <li>• Use the tagline in all your marketing materials for consistency</li>
+              <li>• Test different versions to see what converts best</li>
+              <li>• Include social proof like testimonials or user counts</li>
+              <li>• Create a sense of urgency with time-sensitive offers</li>
             </ul>
           </CardContent>
         </Card>
