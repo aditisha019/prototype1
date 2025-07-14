@@ -12,6 +12,9 @@ import { SellOnlinePage } from "./components/SellOnlinePage";
 import { ProductFormPage } from "./components/ProductFormPage";
 import { PlatformRecommenderPage } from "./components/PlatformRecommenderPage";
 import { ListingGuidePage } from "./components/ListingGuidePage";
+import { AIProductListingPage } from "./components/AIProductListingPage";
+import { AIPricingPage } from "./components/AIPricingPage";
+import { AIMarketingPage } from "./components/AIMarketingPage";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +32,9 @@ const App = () => (
           <Route path="/product-form" element={<ProductFormPage />} />
           <Route path="/platform-recommender" element={<PlatformRecommenderPage />} />
           <Route path="/listing-guide" element={<ListingGuidePage />} />
+          <Route path="/ai-product-listing" element={<AIProductListingPage />} />
+          <Route path="/ai-pricing" element={<AIPricingPage />} />
+          <Route path="/ai-marketing" element={<AIMarketingPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, CheckCircle, Camera, Edit, TrendingUp, Share, Star } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Target, DollarSign, Megaphone, Sparkles } from "lucide-react";
 
 interface ProductData {
   category: string;
@@ -27,71 +27,6 @@ export function ListingGuidePage() {
 
   if (!productData) return null;
 
-  const suggestedPrice = Math.round(parseInt(productData.costPrice) * 2.5);
-
-  const steps = [
-    {
-      icon: <Camera className="h-6 w-6" />,
-      title: "Take Amazing Photos",
-      description: `For ${productData.category.toLowerCase()}, focus on:`,
-      details: [
-        "Use natural lighting or a ring light",
-        "Show multiple angles (front, back, close-ups)",
-        "Include size/scale references",
-        "Keep backgrounds clean and simple",
-        "Show the product in use if possible"
-      ]
-    },
-    {
-      icon: <Edit className="h-6 w-6" />,
-      title: "Write Compelling Description",
-      description: "Based on your product, here's what to highlight:",
-      details: [
-        `Product name: "${productData.productName}"`,
-        `Key benefits and features`,
-        `Materials/ingredients used`,
-        `Size, color, and variant options`,
-        `Care instructions or usage tips`
-      ]
-    },
-    {
-      icon: <TrendingUp className="h-6 w-6" />,
-      title: "Smart Pricing Strategy",
-      description: `For ${productData.platform}:`,
-      details: [
-        `Cost price: ₹${productData.costPrice}`,
-        `Suggested selling price: ₹${suggestedPrice}`,
-        `Profit margin: ₹${suggestedPrice - parseInt(productData.costPrice)}`,
-        `Research competitor prices`,
-        `Consider platform fees and shipping`
-      ]
-    },
-    {
-      icon: <Star className="h-6 w-6" />,
-      title: "Optimize for Search",
-      description: "Make your listing discoverable:",
-      details: [
-        `Use relevant keywords for ${productData.category}`,
-        "Include brand name and model if applicable",
-        "Add trending hashtags",
-        "Choose the right category",
-        "Fill all optional fields"
-      ]
-    },
-    {
-      icon: <Share className="h-6 w-6" />,
-      title: "Launch & Promote",
-      description: "Get your first sales:",
-      details: [
-        "Share with friends and family first",
-        "Join relevant WhatsApp/Facebook groups",
-        "Offer launch discounts",
-        "Ask for honest reviews",
-        "Post on social media"
-      ]
-    }
-  ];
-
   return (
     <div className="min-h-screen bg-gradient-warm">
       {/* Header */}
@@ -109,11 +44,11 @@ export function ListingGuidePage() {
           
           <div className="flex items-center gap-2">
             <div className="bg-gradient-primary p-2 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-white" />
+              <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-lg">Your Listing Guide</h1>
-              <p className="text-sm text-muted-foreground">Step-by-step success plan</p>
+              <h1 className="font-bold text-lg">{productData.platform} Selling Guide</h1>
+              <p className="text-sm text-muted-foreground">AI-powered tools for success</p>
             </div>
           </div>
         </div>
@@ -124,92 +59,95 @@ export function ListingGuidePage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Perfect! Here's Your Action Plan 🎯
+            Great choice! Let's help you sell on {productData.platform} 🎯
           </h2>
           <p className="text-lg text-muted-foreground">
-            Customized guide for "{productData.productName}" on {productData.platform}
+            We've prepared your personalized step-by-step guide for "{productData.productName}"
           </p>
         </div>
 
-        {/* Product Summary */}
-        <Card className="mb-8 shadow-elegant border-0 bg-gradient-success">
+        {/* AI Tools */}
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* AI Product Listing */}
+          <Card className="shadow-elegant border-0 bg-card/80 backdrop-blur-sm hover:shadow-warm transition-all duration-300 cursor-pointer group"
+                onClick={() => navigate("/ai-product-listing")}>
+            <CardHeader className="text-center pb-4">
+              <div className="bg-gradient-primary p-4 rounded-2xl mx-auto w-fit mb-4 group-hover:scale-110 transition-transform">
+                <Target className="h-8 w-8 text-white" />
+              </div>
+              <CardTitle className="text-xl">🎯 AI Product Listing</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-muted-foreground mb-4">
+                Generate perfect listing titles, bullet points, and SEO-optimized descriptions automatically
+              </p>
+              <Button className="w-full bg-gradient-primary text-white hover:opacity-90">
+                Create Listing Content
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* AI Guided Selling Price */}
+          <Card className="shadow-elegant border-0 bg-card/80 backdrop-blur-sm hover:shadow-warm transition-all duration-300 cursor-pointer group"
+                onClick={() => navigate("/ai-pricing")}>
+            <CardHeader className="text-center pb-4">
+              <div className="bg-gradient-success p-4 rounded-2xl mx-auto w-fit mb-4 group-hover:scale-110 transition-transform">
+                <DollarSign className="h-8 w-8 text-white" />
+              </div>
+              <CardTitle className="text-xl">💰 AI Guided Selling Price</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-muted-foreground mb-4">
+                Get intelligent price recommendations with profit margin insights
+              </p>
+              <Button className="w-full bg-gradient-success text-white hover:opacity-90">
+                Calculate Best Price
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* AI Gen Ads & Promo Content */}
+          <Card className="shadow-elegant border-0 bg-card/80 backdrop-blur-sm hover:shadow-warm transition-all duration-300 cursor-pointer group"
+                onClick={() => navigate("/ai-marketing")}>
+            <CardHeader className="text-center pb-4">
+              <div className="bg-gradient-accent p-4 rounded-2xl mx-auto w-fit mb-4 group-hover:scale-110 transition-transform">
+                <Megaphone className="h-8 w-8 text-white" />
+              </div>
+              <CardTitle className="text-xl">📢 AI Gen Ads & Promo</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="text-muted-foreground mb-4">
+                Create engaging Instagram captions, WhatsApp messages, and offer taglines
+              </p>
+              <Button className="w-full bg-gradient-accent text-white hover:opacity-90">
+                Generate Marketing Content
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Product Info Card */}
+        <Card className="mt-8 shadow-warm border-0 bg-gradient-subtle">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              Your Product Summary
-            </CardTitle>
+            <CardTitle>Your Product Details</CardTitle>
           </CardHeader>
           <CardContent className="grid md:grid-cols-2 gap-4">
             <div>
               <p><strong>Product:</strong> {productData.productName}</p>
               <p><strong>Category:</strong> {productData.category}</p>
-              <p><strong>Platform:</strong> {productData.platform}</p>
             </div>
             <div>
+              <p><strong>Platform:</strong> {productData.platform}</p>
               <p><strong>Cost Price:</strong> ₹{productData.costPrice}</p>
-              <p><strong>Suggested Price:</strong> ₹{suggestedPrice}</p>
-              <p><strong>Potential Profit:</strong> ₹{suggestedPrice - parseInt(productData.costPrice)}</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Steps */}
-        <div className="space-y-6">
-          {steps.map((step, index) => (
-            <Card key={index} className="shadow-warm border-0 bg-card/80 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="bg-gradient-primary p-2 rounded-lg text-white">
-                    {step.icon}
-                  </div>
-                  <div>
-                    <span className="text-sm text-muted-foreground">Step {index + 1}</span>
-                    <h3 className="text-xl">{step.title}</h3>
-                  </div>
-                </CardTitle>
-                <CardDescription className="text-base">
-                  {step.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {step.details.map((detail, detailIndex) => (
-                    <li key={detailIndex} className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-sm">{detail}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-          <Button 
-            onClick={() => navigate("/home")}
-            className="bg-gradient-primary hover:opacity-90 text-white font-medium px-8 py-3"
-          >
-            Start Another Product 🚀
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => window.print()}
-            className="px-8 py-3"
-          >
-            Print This Guide 📄
-          </Button>
-        </div>
-
         {/* Motivational Footer */}
         <div className="mt-8 text-center p-6 bg-card/30 rounded-2xl backdrop-blur-sm border border-border/50">
-          <h3 className="text-xl font-semibold mb-2">You're Ready to Succeed! 🌟</h3>
-          <p className="text-muted-foreground italic">
-            "Success is not just about the destination, but taking the first step. You've taken yours - now let's make it happen!"
-          </p>
-          <p className="text-sm text-muted-foreground mt-3">
-            Remember: Every successful business started with someone believing in their product. We believe in you! 💪
+          <h3 className="text-xl font-semibold mb-2">Ready to Launch Your Success Story! 🚀</h3>
+          <p className="text-muted-foreground">
+            Use our AI tools above to create professional listings, set winning prices, and craft compelling marketing content.
           </p>
         </div>
       </div>
